@@ -1667,6 +1667,7 @@ version = "0.1.0"
 dependencies = [
  "borsh 1.6.0",
  "solana-program",
+ "thiserror",
 ]
 
 [[package]]

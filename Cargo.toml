@@ -10,3 +10,4 @@ crate-type = ["cdylib","lib"]
 [dependencies]
 borsh = {version="1.6.0", features = ["derive"]}
 solana-program = {version="2.3.0"}
+thiserror = "2.0.17"
