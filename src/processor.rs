@@ -5,7 +5,8 @@ use solana_program::{
 };
 use crate::instruction::InstructionType;
 use crate::instructions::{
-    create_manager::create_manager
+    create_manager::create_manager,
+    create_stake_account::create_stake_account
 };
 
 pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruction_data:&[u8])->ProgramResult{
@@ -16,6 +17,10 @@ pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruct
         InstructionType::CreateManager { allowed_validators ,manager_bump}=>{
             msg!("create manager ix called");
             create_manager(program_id, accounts,allowed_validators,manager_bump)?;
+        },
+        InstructionType::CreateStakeAccount{stake_amount,manager_bump}=>{
+            msg!("create stake account ix called");
+            create_stake_account(program_id, accounts, stake_amount, manager_bump);
         }
     }
     Ok(())

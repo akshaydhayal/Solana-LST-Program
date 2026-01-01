@@ -4,7 +4,10 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum StakeManagerErrors{
     #[error("user provided wrong manager pda account")]
-    ManagerPdaMismatch
+    ManagerPdaMismatch,
+
+    #[error("given stake program is not correct")]
+    WrongStakeProgramId
 }
 
 impl From<StakeManagerErrors> for ProgramError{
