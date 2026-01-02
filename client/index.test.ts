@@ -32,6 +32,14 @@ let managerPdaSchema:borsh.Schema={
         }},
     }
 }
+let userPositionPdaSchema:borsh.Schema={
+    struct:{
+        owner:{array:{type:'u8', len:32}},
+        stake_acc:{array:{type:'u8', len:32}},
+        deposited_amount:'u64'
+    }
+}
+
 let stakeAmountSchema:borsh.Schema={
     struct:{
         stakeAmount:'u64'
@@ -55,6 +63,10 @@ describe("stake manager tests",()=>{
     let stake_manager_prog:PublicKey;
     
     let stake_acc:Keypair;
+    
+    let stake_acc1:PublicKey;    // user1 stake account address
+    let stake_acc2:PublicKey;    // user2 stake account address
+
     let manager_pda:PublicKey;
     let user_position_pda:PublicKey;
     let manager_bump:number;
@@ -90,9 +102,12 @@ describe("stake manager tests",()=>{
         
         // [manager_pda,manager_bump]=PublicKey.findProgramAddressSync([Buffer.from("manager"), user.publicKey.toBuffer()], stake_manager_prog);
         [manager_pda,manager_bump]=PublicKey.findProgramAddressSync([Buffer.from("manager")], stake_manager_prog);
-        [user_position_pda,user_position_bump]=PublicKey.findProgramAddressSync([Buffer.from("position"), user10.publicKey.toBuffer()], stake_manager_prog);
+        [user_position_pda,user_position_bump]=PublicKey.findProgramAddressSync([Buffer.from("position"), user.publicKey.toBuffer()], stake_manager_prog);
         // [user_position_pda,user_position_bump]=PublicKey.findProgramAddressSync([Buffer.from("position"), user.publicKey.toBuffer()], stake_manager_prog);
+        
         stake_acc=Keypair.generate();
+        stake_acc1=new PublicKey("8sbcVDyjLgvfPRkSLD1H3sGw6BR3fG42xTEk5Hc35rU");
+        stake_acc2=new PublicKey("BZXHZXyGyu2L8iar6z4YfthLMvDhXcbmUnASsMJVBhnm");
 
         console.log("user : ",user.publicKey.toBase58());
         console.log("user2 : ",user2.publicKey.toBase58());
@@ -120,6 +135,7 @@ describe("stake manager tests",()=>{
         // console.log("stake_acc_local : ",stake_acc_local.publicKey.toBase58());
 
     }),
+
     // it("create manager test",async()=>{
     //     console.log("devnet create manager test")
     //     let allowed_validators=[vote_acc.toBytes(), new PublicKey("votem3UdGx5xWFbY9EFbyZ1X2pBuswfR5yd2oB3JAaj").toBytes()];
@@ -172,99 +188,132 @@ describe("stake manager tests",()=>{
     //     // let txStatus_local=svm.sendTransaction(tx_local);
     //     // console.log("create manager txStatus_local : ",txStatus_local.toString());
     // }),
+   
     
-    it("create stake account test",async()=>{
-        console.log("devnet create stake acc test");
-        let serialised_stake_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.8*LAMPORTS_PER_SOL});
-        console.log("serialised_stake_amount : ",serialised_stake_amount);
+    // it("create stake account test",async()=>{
+    //     console.log("devnet create stake acc test");
+    //     let serialised_stake_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.8*LAMPORTS_PER_SOL});
+    //     console.log("serialised_stake_amount : ",serialised_stake_amount);
+    //     let ix=new TransactionInstruction({
+    //         programId:stake_manager_prog,
+    //         keys:[
+    //             {pubkey:user10.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:manager_pda, isSigner:false, isWritable:true},
+    //             {pubkey:user_position_pda, isSigner:false, isWritable:true},
+    //             {pubkey:stake_acc.publicKey, isSigner:true, isWritable:true},
+    //             {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_RENT_PUBKEY, isSigner:false, isWritable:false},
+    //             {pubkey:SystemProgram.programId, isSigner:false, isWritable:false}
+    //         ],
+    //         data:Buffer.concat([
+    //             Buffer.from([1]),
+    //             Buffer.from(serialised_stake_amount),
+    //             // Buffer.from([99,0,0,0,0,0,0,0]),
+    //             Buffer.from([manager_bump]),
+    //             Buffer.from([user_position_bump])
+    //         ])
+    //     });
+    //     let tx=new Transaction().add(ix);
+    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+    //     tx.sign(user10,stake_acc);
+    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
+    //     await connection.confirmTransaction(txStatus,"confirmed");
+    //     console.log("create stake acc txStatus : ",txStatus.toString());
+        
+    //     let stake_acc_data=await connection.getAccountInfo(stake_acc.publicKey,"confirmed");
+    //     console.log("stake_acc_data : ",stake_acc_data);
+
+    //     let manager_pda_data=await connection.getAccountInfo(manager_pda);
+    //     console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema,manager_pda_data?.data));
+
+    //     let user_position_pda_data=await connection.getAccountInfo(user_position_pda,"confirmed");
+    //     console.log("user_position_pda_data : ",user_position_pda_data);
+        
+    //     //local litesvm tests
+    //     // console.log("local create stake acc test")
+    //     // let ix_local=new TransactionInstruction({
+    //     //     programId:stake_manager_prog_local,
+    //     //     keys:[
+    //     //         {pubkey:user_local.publicKey, isSigner:true, isWritable:false},
+    //     //         {pubkey:manager_pda_local, isSigner:false, isWritable:true},
+    //     //         {pubkey:stake_acc_local.publicKey, isSigner:true, isWritable:true},
+    //     //         {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
+    //     //         {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //     //         {pubkey:SYSVAR_RENT_PUBKEY, isSigner:false, isWritable:false}
+    //     //     ],
+    //     //     data:Buffer.concat([
+    //     //         Buffer.from([1]),
+    //     //         Buffer.from([99,0,0,0,0,0,0,0]),
+    //     //         Buffer.from([manager_bump_local])
+    //     //     ])
+    //     // });
+    //     // let tx_local=new Transaction().add(ix_local);
+    //     // tx_local.recentBlockhash=svm.latestBlockhash();
+    //     // tx_local.sign(user_local, stake_acc_local);
+    //     // let txStatus_local=svm.sendTransaction(tx_local);
+    //     // console.log("create stake acc txStatus_local : ",txStatus_local.toString());
+
+    //     // let stake_acc_local_data=svm.getAccount(stake_acc_local.publicKey);
+    //     // console.log("stake_acc_local_data : ",stake_acc_local_data);
+    // }),
+
+
+    // it("delegate stake to validator test", async()=>{
+    //     const STAKE_CONFIG_ID = new PublicKey("StakeConfig11111111111111111111111111111111");
+    //     let ix=new TransactionInstruction({
+    //         programId:stake_manager_prog,
+    //         keys:[
+    //             {pubkey:user10.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:manager_pda, isSigner:false, isWritable:false},
+    //             {pubkey:stake_acc.publicKey, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+    //             {pubkey:vote_acc, isSigner:false, isWritable:false},
+    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
+    //             {pubkey:STAKE_CONFIG_ID, isSigner:false, isWritable:false},
+    //         ],
+    //         data:Buffer.concat([
+    //             Buffer.from([2]),
+    //             Buffer.from([manager_bump])
+    //         ])
+    //     });
+    //     let tx=new Transaction().add(ix);
+    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+    //     tx.sign(user10);
+    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
+    //     await connection.confirmTransaction(txStatus); 
+    //     console.log("delegate stake tx : ",txStatus);
+    // }),
+
+
+    it("deactivate stake test", async()=>{
         let ix=new TransactionInstruction({
             programId:stake_manager_prog,
             keys:[
-                // {pubkey:user.publicKey, isSigner:true, isWritable:false},
-                {pubkey:user10.publicKey, isSigner:true, isWritable:false},
-                {pubkey:manager_pda, isSigner:false, isWritable:true},
-                {pubkey:user_position_pda, isSigner:false, isWritable:true},
-                {pubkey:stake_acc.publicKey, isSigner:true, isWritable:true},
-                {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
-                {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
-                {pubkey:SYSVAR_RENT_PUBKEY, isSigner:false, isWritable:false},
-                {pubkey:SystemProgram.programId, isSigner:false, isWritable:false}
-            ],
-            data:Buffer.concat([
-                Buffer.from([1]),
-                Buffer.from(serialised_stake_amount),
-                // Buffer.from([99,0,0,0,0,0,0,0]),
-                Buffer.from([manager_bump]),
-                Buffer.from([user_position_bump])
-            ])
-        });
-        let tx=new Transaction().add(ix);
-        tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-        tx.sign(user10,stake_acc);
-        let txStatus=await connection.sendRawTransaction(tx.serialize());
-        await connection.confirmTransaction(txStatus,"confirmed");
-        console.log("create stake acc txStatus : ",txStatus.toString());
-        
-        let stake_acc_data=await connection.getAccountInfo(stake_acc.publicKey,"confirmed");
-        console.log("stake_acc_data : ",stake_acc_data);
-
-        let manager_pda_data=await connection.getAccountInfo(manager_pda);
-        console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema,manager_pda_data?.data));
-
-        let user_position_pda_data=await connection.getAccountInfo(user_position_pda,"confirmed");
-        console.log("user_position_pda_data : ",user_position_pda_data);
-        
-        //local litesvm tests
-        // console.log("local create stake acc test")
-        // let ix_local=new TransactionInstruction({
-        //     programId:stake_manager_prog_local,
-        //     keys:[
-        //         {pubkey:user_local.publicKey, isSigner:true, isWritable:false},
-        //         {pubkey:manager_pda_local, isSigner:false, isWritable:true},
-        //         {pubkey:stake_acc_local.publicKey, isSigner:true, isWritable:true},
-        //         {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
-        //         {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
-        //         {pubkey:SYSVAR_RENT_PUBKEY, isSigner:false, isWritable:false}
-        //     ],
-        //     data:Buffer.concat([
-        //         Buffer.from([1]),
-        //         Buffer.from([99,0,0,0,0,0,0,0]),
-        //         Buffer.from([manager_bump_local])
-        //     ])
-        // });
-        // let tx_local=new Transaction().add(ix_local);
-        // tx_local.recentBlockhash=svm.latestBlockhash();
-        // tx_local.sign(user_local, stake_acc_local);
-        // let txStatus_local=svm.sendTransaction(tx_local);
-        // console.log("create stake acc txStatus_local : ",txStatus_local.toString());
-
-        // let stake_acc_local_data=svm.getAccount(stake_acc_local.publicKey);
-        // console.log("stake_acc_local_data : ",stake_acc_local_data);
-    }),
-    it("delegate stake to validator test", async()=>{
-        const STAKE_CONFIG_ID = new PublicKey("StakeConfig11111111111111111111111111111111");
-        let ix=new TransactionInstruction({
-            programId:stake_manager_prog,
-            keys:[
-                {pubkey:user10.publicKey, isSigner:true, isWritable:false},
+                {pubkey:user.publicKey, isSigner:true, isWritable:false},
                 {pubkey:manager_pda, isSigner:false, isWritable:false},
-                {pubkey:stake_acc.publicKey, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
-                {pubkey:vote_acc, isSigner:false, isWritable:false},
+                {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
                 {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
                 {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
-                {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
-                {pubkey:STAKE_CONFIG_ID, isSigner:false, isWritable:false},
             ],
             data:Buffer.concat([
-                Buffer.from([2]),
+                Buffer.from([3]),
                 Buffer.from([manager_bump])
             ])
         });
         let tx=new Transaction().add(ix);
         tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-        tx.sign(user10);
+        tx.sign(user);
+        
         let txStatus=await connection.sendRawTransaction(tx.serialize());
         await connection.confirmTransaction(txStatus); 
-        console.log("delegate stake tx : ",txStatus);
+        console.log("dectivate stake tx : ",txStatus);
+
+        let manager_pda_data=await connection.getAccountInfo(manager_pda);
+        console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema, manager_pda_data?.data));
+        
+        let user_position_pda_data=await connection.getAccountInfo(user_position_pda);
+        console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
     })
 })
