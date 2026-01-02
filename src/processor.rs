@@ -8,7 +8,8 @@ use crate::instructions::{
     create_manager::create_manager,
     create_stake_account::create_stake_account,
     delegate_stake::delegate_stake_to_validator,
-    deactivate_stake::deactivate_stake_fn
+    deactivate_stake::deactivate_stake_fn,
+    withdraw_stake::withdraw_stake
 };
 
 pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruction_data:&[u8])->ProgramResult{
@@ -31,6 +32,10 @@ pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruct
         InstructionType::DeactivateStake{manager_bump}=>{
             msg!("deactivate stake ix called");
             deactivate_stake_fn(program_id, accounts, manager_bump)?;
+        },
+        InstructionType::WithdrawStake { manager_bump , user_position_bump}=>{
+            msg!("withdraw stake ix called");
+            withdraw_stake(program_id, accounts, manager_bump, user_position_bump)?;
         }
     }
     Ok(())

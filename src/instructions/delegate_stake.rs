@@ -19,7 +19,6 @@ pub fn delegate_stake_to_validator(program_id:&Pubkey, accounts:&[AccountInfo] ,
     let sysvar_stake_history=next_account_info(&mut accounts_iter)?;
     let stake_config_id=next_account_info(&mut accounts_iter)?;
 
-    msg!("a");
     if !user.is_signer{
         return Err(ProgramError::MissingRequiredSignature);
     }
@@ -28,16 +27,7 @@ pub fn delegate_stake_to_validator(program_id:&Pubkey, accounts:&[AccountInfo] ,
     if manager_derived_pda!=*manager_pda.key{
         return Err(StakeManagerErrors::ManagerPdaMismatch.into());
     }
-    msg!("b");
-    // let account_metas = vec![
-        //     AccountMeta::new(*stake_pubkey, false),
-        //     AccountMeta::new_readonly(*vote_pubkey, false),
-        //     AccountMeta::new_readonly(CLOCK_ID, false),
-        //     AccountMeta::new_readonly(STAKE_HISTORY_ID, false),
-        //     // For backwards compatibility we pass the stake config, although this account is unused
-        //     AccountMeta::new_readonly(config::ID, false),
-        //     AccountMeta::new_readonly(*authorized_pubkey, true),
-        // ];
+   
     let create_delegate_stake_ix=delegate_stake(stake_acc.key,
         manager_pda.key, vote_acc.key);
     msg!("c");

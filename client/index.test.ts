@@ -287,19 +287,52 @@ describe("stake manager tests",()=>{
     // }),
 
 
-    it("deactivate stake test", async()=>{
+    // it("deactivate stake test", async()=>{
+    //     let ix=new TransactionInstruction({
+    //         programId:stake_manager_prog,
+    //         keys:[
+    //             {pubkey:user.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:manager_pda, isSigner:false, isWritable:false},
+    //             {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+    //         ],
+    //         data:Buffer.concat([
+    //             Buffer.from([3]),
+    //             Buffer.from([manager_bump])
+    //         ])
+    //     });
+    //     let tx=new Transaction().add(ix);
+    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+    //     tx.sign(user);
+        
+    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
+    //     await connection.confirmTransaction(txStatus); 
+    //     console.log("dectivate stake tx : ",txStatus);
+
+    //     let manager_pda_data=await connection.getAccountInfo(manager_pda);
+    //     console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema, manager_pda_data?.data));
+        
+    //     let user_position_pda_data=await connection.getAccountInfo(user_position_pda);
+    //     console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
+    // }),
+
+    it("withdraw stake test", async()=>{
         let ix=new TransactionInstruction({
             programId:stake_manager_prog,
             keys:[
                 {pubkey:user.publicKey, isSigner:true, isWritable:false},
                 {pubkey:manager_pda, isSigner:false, isWritable:false},
+                {pubkey:user_position_pda, isSigner:false, isWritable:false},
                 {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
                 {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
                 {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+                {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
             ],
             data:Buffer.concat([
-                Buffer.from([3]),
-                Buffer.from([manager_bump])
+                Buffer.from([4]),
+                Buffer.from([manager_bump]),
+                Buffer.from([user_position_bump])
             ])
         });
         let tx=new Transaction().add(ix);
@@ -308,7 +341,7 @@ describe("stake manager tests",()=>{
         
         let txStatus=await connection.sendRawTransaction(tx.serialize());
         await connection.confirmTransaction(txStatus); 
-        console.log("dectivate stake tx : ",txStatus);
+        console.log("withdraw stake tx : ",txStatus);
 
         let manager_pda_data=await connection.getAccountInfo(manager_pda);
         console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema, manager_pda_data?.data));
