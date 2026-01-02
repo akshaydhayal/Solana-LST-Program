@@ -5,9 +5,13 @@ use thiserror::Error;
 pub enum StakeManagerErrors{
     #[error("user provided wrong manager pda account")]
     ManagerPdaMismatch,
-
     #[error("given stake program is not correct")]
-    WrongStakeProgramId
+    WrongStakeProgramId,
+    #[error("user provided wrong user position pda account")]
+    UserPositionPdaMismatch,
+
+
+
 }
 
 impl From<StakeManagerErrors> for ProgramError{

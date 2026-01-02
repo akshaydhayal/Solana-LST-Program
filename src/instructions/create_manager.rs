@@ -6,14 +6,13 @@ use solana_program::{
     }, system_instruction::create_account, sysvar::Sysvar
 };
 
-use crate::{error::StakeManagerErrors, state::Manager};
+use crate::{error::StakeManagerErrors, state::{Manager}};
 
 pub fn create_manager(program_id:&Pubkey, accounts:&[AccountInfo], allowed_validators:Vec<Pubkey>, manager_bump:u8)->ProgramResult{
     let mut accounts_iter=accounts.iter();
     let user=next_account_info(&mut accounts_iter)?;
     let manager_pda=next_account_info(&mut accounts_iter)?;
     let system_prog=next_account_info(&mut accounts_iter)?;
-    // let vote_acc=next_account_info(&mut accounts_iter)?;
 
     if !user.is_signer{
         return Err(ProgramError::MissingRequiredSignature);
@@ -21,7 +20,10 @@ pub fn create_manager(program_id:&Pubkey, accounts:&[AccountInfo], allowed_valid
     if !manager_pda.data_is_empty(){
         return Err(ProgramError::AccountAlreadyInitialized);
     }
-    let manager_seeds=&[b"manager",user.key.as_ref(),&manager_bump.to_le_bytes()];
+    // let manager_seeds=&[b"manager",user.key.as_ref(),&manager_bump.to_le_bytes()];
+    let manager_seeds:&[&[u8]]=&[b"manager", &manager_bump.to_le_bytes()];
+    // let manager_seeds=&["manager".as_bytes(), &manager_bump.to_le_bytes()];
+    
     let manager_derived_pda=Pubkey::create_program_address(manager_seeds, program_id)?;
     if manager_derived_pda!=*manager_pda.key{
         return Err(StakeManagerErrors::ManagerPdaMismatch.into());
@@ -34,7 +36,7 @@ pub fn create_manager(program_id:&Pubkey, accounts:&[AccountInfo], allowed_valid
     invoke_signed(&create_manager_pda_ix,
         &[user.clone(), manager_pda.clone(), system_prog.clone()],
         &[manager_seeds])?;
-
+    
     let manager_pda_data=Manager{admin:*user.key, total_staked:0,allowed_validators};
     manager_pda_data.serialize(&mut *manager_pda.data.borrow_mut())?;
     Ok(())
