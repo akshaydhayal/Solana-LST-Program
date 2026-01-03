@@ -10,8 +10,8 @@ use crate::instructions::{
     delegate_stake::delegate_stake_to_validator,
     deactivate_stake::deactivate_stake_fn,
     withdraw_stake::withdraw_stake,
-    merge_stake_accoouts::merge_stake_accounts,
-    split_stake_accoout::split_stake_accounts
+    merge_stake_accounts::merge_stake_accounts,
+    split_stake_account::split_stake_accounts
 };
 
 pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruction_data:&[u8])->ProgramResult{

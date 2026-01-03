@@ -45,25 +45,10 @@ pub fn split_stake_accounts(program_id:&Pubkey, accounts:&[AccountInfo] ,split_a
     ); 
     invoke(&ix, &[user.clone(), new_split_stake_acc.clone()])?;
 
-
-    // let create_split_stake_account_ix=split(stake_pubkey, authorized_pubkey, lamports, split_stake_pubkey)
-    let a=StakeInstruction::Split(split_amount);
-    let mut split_amount_temp:u64=0;
-    match a{
-        StakeInstruction::Split(x)=>{
-            split_amount_temp=x;
-            msg!("split amount : {:?}",split_amount_temp);
-            msg!("split amount : {:?}",split_amount_temp.to_le_bytes());
-            msg!("split amount : {:?}",split_amount_temp.to_le_bytes().to_vec());
-        },
-        _=>{}
-    }
-    // # Account references
-    //   0. `[WRITE]` Stake account to be split; must be in the Initialized or Stake state
-    //   1. `[WRITE]` Uninitialized stake account that will take the split-off amount
-    //   2. `[SIGNER]` Stake authority 
-    let mut serialised_ix_data=split_amount_temp.to_le_bytes().to_vec();
-    serialised_ix_data.insert(0, 3);
+    //now spliting stake account
+    let mut serialised_ix_data=Vec::with_capacity(12);
+    serialised_ix_data.extend_from_slice(&vec![3,0,0,0]);
+    serialised_ix_data.extend_from_slice(&split_amount.to_le_bytes());
     msg!("serialised_ix_data : {:?}",serialised_ix_data);
 
     let create_split_stake_account_ix=Instruction{
@@ -73,20 +58,19 @@ pub fn split_stake_accounts(program_id:&Pubkey, accounts:&[AccountInfo] ,split_a
             AccountMeta{pubkey:*new_split_stake_acc.key, is_signer:false, is_writable:true},
             AccountMeta{pubkey:*manager_pda.key, is_signer:true, is_writable:false}
             ],
-            // data:split_amount_temp.to_le_bytes().to_vec()
             data:serialised_ix_data
         };
-        let create_split_stake_account_ix2=Instruction::new_with_bincode(
-            solana_program::stake::program::ID,
-            &solana_program::stake::instruction::StakeInstruction::Split(split_amount),
-            vec![
-                AccountMeta{pubkey:*stake_acc.key, is_signer:false, is_writable:true},
-                AccountMeta{pubkey:*new_split_stake_acc.key, is_signer:false, is_writable:true},
-                AccountMeta{pubkey:*manager_pda.key, is_signer:true, is_writable:false}
-            ]
-        );
+    let create_split_stake_account_ix2=Instruction::new_with_bincode(
+        solana_program::stake::program::ID,
+        &solana_program::stake::instruction::StakeInstruction::Split(split_amount),
+        vec![
+            AccountMeta{pubkey:*stake_acc.key, is_signer:false, is_writable:true},
+            AccountMeta{pubkey:*new_split_stake_acc.key, is_signer:false, is_writable:true},
+            AccountMeta{pubkey:*manager_pda.key, is_signer:true, is_writable:false}
+        ]
+    );
 
-    invoke_signed(&create_split_stake_account_ix2,
+    invoke_signed(&create_split_stake_account_ix,
         &[stake_acc.clone(), new_split_stake_acc.clone(), manager_pda.clone()],
         &[manager_seeds])?;
 

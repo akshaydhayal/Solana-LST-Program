@@ -352,34 +352,63 @@ describe("stake manager tests",()=>{
     //     console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
     // }),
 
-    it("split stake account test",async()=>{
-        let new_split_stake_acc=Keypair.generate();
-        // let new_split_stake_pubkey=new PublicKey("6hyhi7pe3ZkdYBNUJyic8vPR5RPtr1Gequr3NG8bQe9Y");
-        console.log("new_split_stake_acc : ",new_split_stake_acc.publicKey.toBase58());
-        let serialised_split_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.3*LAMPORTS_PER_SOL});
-        console.log("serialised_split_amount : ",serialised_split_amount);
+
+    // it("split stake account test",async()=>{
+    //     let new_split_stake_acc=Keypair.generate();
+    //     // let new_split_stake_pubkey=new PublicKey("6hyhi7pe3ZkdYBNUJyic8vPR5RPtr1Gequr3NG8bQe9Y");
+    //     console.log("new_split_stake_acc : ",new_split_stake_acc.publicKey.toBase58());
+    //     let serialised_split_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.1*LAMPORTS_PER_SOL});
+    //     console.log("serialised_split_amount : ",serialised_split_amount);
+    //     let ix=new TransactionInstruction({
+    //         programId:stake_manager_prog,
+    //         keys:[
+    //             {pubkey:user10.publicKey, isSigner:true, isWritable:true},
+    //             {pubkey:manager_pda, isSigner:false, isWritable:false},
+    //             // {pubkey:stake_acc.publicKey, isSigner:false, isWritable:false},
+    //             {pubkey:stake_acc10, isSigner:false, isWritable:true},
+    //             {pubkey:new_split_stake_acc.publicKey, isSigner:true, isWritable:true},
+    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
+    //         ],
+    //         data:Buffer.concat([
+    //             Buffer.from([6]),
+    //             Buffer.from(serialised_split_amount),
+    //             Buffer.from([manager_bump])
+    //         ])
+    //     });
+    //     let tx=new Transaction().add(ix);
+    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+    //     tx.sign(user10, new_split_stake_acc);
+    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
+    //     await connection.confirmTransaction(txStatus);
+    //     console.log("split stake tx status : ",txStatus);
+    // }),
+
+
+    it("merge stake accounts test",async()=>{
+        let src_stake_pubkey=new PublicKey("EiiWuQDa1hud6w2PbrALxdHoEH8vgk2PTgBEXVjXWe2s");
+        console.log("src_stake_acc : ",src_stake_pubkey.toBase58());
         let ix=new TransactionInstruction({
             programId:stake_manager_prog,
             keys:[
                 {pubkey:user10.publicKey, isSigner:true, isWritable:true},
-                {pubkey:manager_pda, isSigner:false, isWritable:false},
-                // {pubkey:stake_acc.publicKey, isSigner:false, isWritable:false},
+                {pubkey:manager_pda, isSigner:false, isWritable:true},
                 {pubkey:stake_acc10, isSigner:false, isWritable:true},
-                {pubkey:new_split_stake_acc.publicKey, isSigner:true, isWritable:true},
+                {pubkey:src_stake_pubkey, isSigner:false, isWritable:true},
                 {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
-                {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
+                {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+                {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
             ],
             data:Buffer.concat([
-                Buffer.from([6]),
-                Buffer.from(serialised_split_amount),
+                Buffer.from([5]),
                 Buffer.from([manager_bump])
             ])
         });
         let tx=new Transaction().add(ix);
         tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-        tx.sign(user10, new_split_stake_acc);
+        tx.sign(user10);
         let txStatus=await connection.sendRawTransaction(tx.serialize());
         await connection.confirmTransaction(txStatus);
-        console.log("split stake tx status : ",txStatus);
+        console.log("merge stake tx status : ",txStatus);
     })
 })
