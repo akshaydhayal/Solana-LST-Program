@@ -66,6 +66,7 @@ describe("stake manager tests",()=>{
     
     let stake_acc1:PublicKey;    // user1 stake account address
     let stake_acc2:PublicKey;    // user2 stake account address
+    let stake_acc10:PublicKey;    // user10 stake account address
 
     let manager_pda:PublicKey;
     let user_position_pda:PublicKey;
@@ -108,6 +109,7 @@ describe("stake manager tests",()=>{
         stake_acc=Keypair.generate();
         stake_acc1=new PublicKey("8sbcVDyjLgvfPRkSLD1H3sGw6BR3fG42xTEk5Hc35rU");
         stake_acc2=new PublicKey("BZXHZXyGyu2L8iar6z4YfthLMvDhXcbmUnASsMJVBhnm");
+        stake_acc10=new PublicKey("AmCYWzLb8NZUNLREqAL7CkUJwEaiVBa5D4zr3474a4ZF");
 
         console.log("user : ",user.publicKey.toBase58());
         console.log("user2 : ",user2.publicKey.toBase58());
@@ -317,36 +319,67 @@ describe("stake manager tests",()=>{
     //     console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
     // }),
 
-    it("withdraw stake test", async()=>{
+    // it("withdraw stake test", async()=>{
+    //     let ix=new TransactionInstruction({
+    //         programId:stake_manager_prog,
+    //         keys:[
+    //             {pubkey:user.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:manager_pda, isSigner:false, isWritable:false},
+    //             {pubkey:user_position_pda, isSigner:false, isWritable:false},
+    //             {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
+    //         ],
+    //         data:Buffer.concat([
+    //             Buffer.from([4]),
+    //             Buffer.from([manager_bump]),
+    //             Buffer.from([user_position_bump])
+    //         ])
+    //     });
+    //     let tx=new Transaction().add(ix);
+    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+    //     tx.sign(user);
+        
+    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
+    //     await connection.confirmTransaction(txStatus); 
+    //     console.log("withdraw stake tx : ",txStatus);
+
+    //     let manager_pda_data=await connection.getAccountInfo(manager_pda);
+    //     console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema, manager_pda_data?.data));
+        
+    //     let user_position_pda_data=await connection.getAccountInfo(user_position_pda);
+    //     console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
+    // }),
+
+    it("split stake account test",async()=>{
+        let new_split_stake_acc=Keypair.generate();
+        // let new_split_stake_pubkey=new PublicKey("6hyhi7pe3ZkdYBNUJyic8vPR5RPtr1Gequr3NG8bQe9Y");
+        console.log("new_split_stake_acc : ",new_split_stake_acc.publicKey.toBase58());
+        let serialised_split_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.3*LAMPORTS_PER_SOL});
+        console.log("serialised_split_amount : ",serialised_split_amount);
         let ix=new TransactionInstruction({
             programId:stake_manager_prog,
             keys:[
-                {pubkey:user.publicKey, isSigner:true, isWritable:false},
+                {pubkey:user10.publicKey, isSigner:true, isWritable:true},
                 {pubkey:manager_pda, isSigner:false, isWritable:false},
-                {pubkey:user_position_pda, isSigner:false, isWritable:false},
-                {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+                // {pubkey:stake_acc.publicKey, isSigner:false, isWritable:false},
+                {pubkey:stake_acc10, isSigner:false, isWritable:true},
+                {pubkey:new_split_stake_acc.publicKey, isSigner:true, isWritable:true},
                 {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
-                {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
-                {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
+                {pubkey:SystemProgram.programId, isSigner:false, isWritable:false},
             ],
             data:Buffer.concat([
-                Buffer.from([4]),
-                Buffer.from([manager_bump]),
-                Buffer.from([user_position_bump])
+                Buffer.from([6]),
+                Buffer.from(serialised_split_amount),
+                Buffer.from([manager_bump])
             ])
         });
         let tx=new Transaction().add(ix);
         tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-        tx.sign(user);
-        
+        tx.sign(user10, new_split_stake_acc);
         let txStatus=await connection.sendRawTransaction(tx.serialize());
-        await connection.confirmTransaction(txStatus); 
-        console.log("withdraw stake tx : ",txStatus);
-
-        let manager_pda_data=await connection.getAccountInfo(manager_pda);
-        console.log("manager_pda_data : ", borsh.deserialize(managerPdaSchema, manager_pda_data?.data));
-        
-        let user_position_pda_data=await connection.getAccountInfo(user_position_pda);
-        console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
+        await connection.confirmTransaction(txStatus);
+        console.log("split stake tx status : ",txStatus);
     })
 })

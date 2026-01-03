@@ -9,7 +9,9 @@ use crate::instructions::{
     create_stake_account::create_stake_account,
     delegate_stake::delegate_stake_to_validator,
     deactivate_stake::deactivate_stake_fn,
-    withdraw_stake::withdraw_stake
+    withdraw_stake::withdraw_stake,
+    merge_stake_accoouts::merge_stake_accounts,
+    split_stake_accoout::split_stake_accounts
 };
 
 pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruction_data:&[u8])->ProgramResult{
@@ -36,6 +38,14 @@ pub fn process_instruction(program_id:&Pubkey, accounts:&[AccountInfo], instruct
         InstructionType::WithdrawStake { manager_bump , user_position_bump}=>{
             msg!("withdraw stake ix called");
             withdraw_stake(program_id, accounts, manager_bump, user_position_bump)?;
+        },
+        InstructionType::MergeStakeAccounts { manager_bump }=>{
+            msg!("merge stake account ix called");
+            merge_stake_accounts(program_id, accounts, manager_bump)?;
+        },
+        InstructionType::SplitStakeAccount { split_amount,manager_bump }=>{
+            msg!("split stake account ix called");
+            split_stake_accounts(program_id, accounts,split_amount, manager_bump)?;
         }
     }
     Ok(())

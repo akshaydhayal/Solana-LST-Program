@@ -1,11 +1,18 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::{AccountInfo, next_account_info}, borsh1::try_from_slice_unchecked, clock::sysvar, config::program::ID, entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError, pubkey::Pubkey, stake::instruction::{deactivate_stake, delegate_stake, withdraw }
+    account_info::{AccountInfo, next_account_info},
+    borsh1::try_from_slice_unchecked,
+    clock::Clock, sysvar::Sysvar,
+    clock::sysvar,
+    config::program::ID, entrypoint::ProgramResult,
+    msg, program::invoke_signed, program_error::ProgramError,
+    pubkey::Pubkey, stake::instruction::{deactivate_stake, delegate_stake, withdraw }
 };
 
 use crate::{error::StakeManagerErrors, state::{Manager, UserPosition}};
 
 pub fn withdraw_stake(program_id:&Pubkey, accounts:&[AccountInfo] , manager_bump:u8, user_position_bump:u8)->ProgramResult{
+    let c=Clock::get()?;
     let mut accounts_iter=accounts.iter();
     let user=next_account_info(&mut accounts_iter)?;
     let manager_pda=next_account_info(&mut accounts_iter)?;

@@ -1,6 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, epoch_stake::{get_epoch_stake_for_vote_account,get_epoch_total_stake}, msg, program::invoke_signed, program_error::ProgramError, pubkey::Pubkey, rent::Rent, stake::{
+    account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, epoch_stake::{get_epoch_stake_for_vote_account,get_epoch_total_stake}, msg, program::invoke_signed,
+     program_error::ProgramError, pubkey::Pubkey, rent::Rent, stake::{
         state::StakeState,
         tools::get_minimum_delegation
     }, system_instruction::create_account, sysvar::Sysvar

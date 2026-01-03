@@ -8,6 +8,6 @@ pub enum InstructionType{
     DelegateStake{manager_bump:u8},
     DeactivateStake{manager_bump:u8},
     WithdrawStake{manager_bump:u8, user_position_bump:u8},
-    // MergeStakeAccounts,
-    // SplitStakeAccounts, 
+    MergeStakeAccounts{manager_bump:u8},
+    SplitStakeAccount{split_amount:u64, manager_bump:u8}, 
 }
