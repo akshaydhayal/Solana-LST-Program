@@ -11,3 +11,13 @@ pub enum InstructionType{
     MergeStakeAccounts{manager_bump:u8},
     SplitStakeAccount{split_amount:u64, manager_bump:u8}, 
 }
+
+// 🔹 Redelegate (composed instruction)
+// Not a Stake Program ix, but a protocol ix.
+// Flow: Deactivate --> Wait epoch --> Delegate to new validator
+// You already have primitives — this just orchestrates them.
+
+// 🔹 AutoRotate
+// RotateStake { from: Pubkey, to: Pubkey }
+// Internally: Deactivate --> Wait epoch --> Delegate elsewhere
+// Often cron-driven / keeper-driven.

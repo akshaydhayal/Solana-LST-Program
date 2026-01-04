@@ -58,15 +58,22 @@ describe("stake manager tests",()=>{
     let user8:Keypair;
     let user9:Keypair;
     let user10:Keypair;
+    let user11:Keypair;
 
     let vote_acc:PublicKey;
+    let vote_acc2:PublicKey;
     let stake_manager_prog:PublicKey;
     
     let stake_acc:Keypair;
     
     let stake_acc1:PublicKey;    // user1 stake account address
     let stake_acc2:PublicKey;    // user2 stake account address
+    let stake_acc3:PublicKey;    // user2 stake account address
+    let stake_acc4:PublicKey;    // user2 stake account address
+    let stake_acc5:PublicKey;    // user2 stake account address
+    let stake_acc6:PublicKey;    // user2 stake account address
     let stake_acc10:PublicKey;    // user10 stake account address
+    let stake_acc11:PublicKey;    // user10 stake account address
 
     let manager_pda:PublicKey;
     let user_position_pda:PublicKey;
@@ -97,19 +104,26 @@ describe("stake manager tests",()=>{
         user8=Keypair.fromSecretKey(Uint8Array.from([127,46,141,69,134,123,231,42,222,30,95,167,148,45,193,234,158,173,17,80,46,198,28,86,135,117,203,37,231,103,146,35,130,231,239,73,208,5,75,160,122,232,126,41,167,27,131,53,51,226,2,78,85,193,212,166,56,234,73,185,217,128,177,192]));
         user9=Keypair.fromSecretKey(Uint8Array.from([93,134,72,57,18,217,43,143,68,107,34,81,51,47,209,134,197,115,167,155,131,169,152,178,146,79,215,211,42,137,176,162,2,217,103,144,6,252,172,248,181,107,209,8,89,249,29,189,227,127,95,228,68,45,9,110,46,151,121,83,15,218,240,131]));
         user10=Keypair.fromSecretKey(Uint8Array.from([119,173,62,21,247,119,229,25,16,142,204,244,138,255,216,212,141,16,86,177,131,176,205,209,255,213,20,176,202,78,158,171,96,162,191,64,224,118,95,210,181,170,141,251,131,185,96,89,42,114,235,231,123,160,206,12,80,223,105,58,219,116,78,130]));
+        user11=Keypair.fromSecretKey(Uint8Array.from([228,38,59,206,100,191,205,154,160,6,161,212,219,253,109,141,185,111,213,48,97,1,96,82,73,206,236,10,37,117,175,75,150,227,96,159,151,252,35,115,118,216,128,77,200,146,192,81,0,97,53,216,204,25,170,226,94,197,56,67,212,206,170,197]));
        
         // vote_acc=new PublicKey("he1iusunGwqrNtafDtLdhsUQDFvo13z9sUa36PauBtk");
         vote_acc=new PublicKey("23AoPQc3EPkfLWb14cKiWNahh1H9rtb3UBk8gWseohjF");
+        vote_acc2=new PublicKey("DSQ5BLBM6UcuWP2SNpmf3TJeMbqbwTFGzVqFGufyNCgk");
         
         // [manager_pda,manager_bump]=PublicKey.findProgramAddressSync([Buffer.from("manager"), user.publicKey.toBuffer()], stake_manager_prog);
         [manager_pda,manager_bump]=PublicKey.findProgramAddressSync([Buffer.from("manager")], stake_manager_prog);
-        [user_position_pda,user_position_bump]=PublicKey.findProgramAddressSync([Buffer.from("position"), user.publicKey.toBuffer()], stake_manager_prog);
+        [user_position_pda,user_position_bump]=PublicKey.findProgramAddressSync([Buffer.from("position"), user6.publicKey.toBuffer()], stake_manager_prog);
         // [user_position_pda,user_position_bump]=PublicKey.findProgramAddressSync([Buffer.from("position"), user.publicKey.toBuffer()], stake_manager_prog);
         
         stake_acc=Keypair.generate();
         stake_acc1=new PublicKey("8sbcVDyjLgvfPRkSLD1H3sGw6BR3fG42xTEk5Hc35rU");
         stake_acc2=new PublicKey("BZXHZXyGyu2L8iar6z4YfthLMvDhXcbmUnASsMJVBhnm");
+        stake_acc3=new PublicKey("3m35V4i4ab8HyrHLpQi9ikA7ct5XuBA8drkKYZvBntoP");
+        stake_acc4=new PublicKey("FCAMY2UbvGFWiaZbqYaFc2VJBTQ4mmCjN8fWEuSCQANz");
+        stake_acc5=new PublicKey("2taReuoE8JL7HkFgCiJk9ZtVuaeskQXpzf233itbpCyx");
+        stake_acc6=new PublicKey("d2UcmndfiBJzfpqpP39SC7ykocNpKFJ7e6x5w8dCCZv");
         stake_acc10=new PublicKey("AmCYWzLb8NZUNLREqAL7CkUJwEaiVBa5D4zr3474a4ZF");
+        stake_acc11=new PublicKey("4i29QW3e98422Un6YZWiAx6vy1FEbUzbKUFY4KdQw2iU");
 
         console.log("user : ",user.publicKey.toBase58());
         console.log("user2 : ",user2.publicKey.toBase58());
@@ -194,12 +208,12 @@ describe("stake manager tests",()=>{
     
     // it("create stake account test",async()=>{
     //     console.log("devnet create stake acc test");
-    //     let serialised_stake_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.8*LAMPORTS_PER_SOL});
+    //     let serialised_stake_amount=borsh.serialize(stakeAmountSchema,{stakeAmount:0.6*LAMPORTS_PER_SOL});
     //     console.log("serialised_stake_amount : ",serialised_stake_amount);
     //     let ix=new TransactionInstruction({
     //         programId:stake_manager_prog,
     //         keys:[
-    //             {pubkey:user10.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:user11.publicKey, isSigner:true, isWritable:false},
     //             {pubkey:manager_pda, isSigner:false, isWritable:true},
     //             {pubkey:user_position_pda, isSigner:false, isWritable:true},
     //             {pubkey:stake_acc.publicKey, isSigner:true, isWritable:true},
@@ -218,7 +232,7 @@ describe("stake manager tests",()=>{
     //     });
     //     let tx=new Transaction().add(ix);
     //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-    //     tx.sign(user10,stake_acc);
+    //     tx.sign(user11,stake_acc);
     //     let txStatus=await connection.sendRawTransaction(tx.serialize());
     //     await connection.confirmTransaction(txStatus,"confirmed");
     //     console.log("create stake acc txStatus : ",txStatus.toString());
@@ -232,7 +246,7 @@ describe("stake manager tests",()=>{
     //     let user_position_pda_data=await connection.getAccountInfo(user_position_pda,"confirmed");
     //     console.log("user_position_pda_data : ",user_position_pda_data);
         
-    //     //local litesvm tests
+    //     // local litesvm tests
     //     // console.log("local create stake acc test")
     //     // let ix_local=new TransactionInstruction({
     //     //     programId:stake_manager_prog_local,
@@ -258,44 +272,46 @@ describe("stake manager tests",()=>{
 
     //     // let stake_acc_local_data=svm.getAccount(stake_acc_local.publicKey);
     //     // console.log("stake_acc_local_data : ",stake_acc_local_data);
+
     // }),
 
 
-    // it("delegate stake to validator test", async()=>{
-    //     const STAKE_CONFIG_ID = new PublicKey("StakeConfig11111111111111111111111111111111");
-    //     let ix=new TransactionInstruction({
-    //         programId:stake_manager_prog,
-    //         keys:[
-    //             {pubkey:user10.publicKey, isSigner:true, isWritable:false},
-    //             {pubkey:manager_pda, isSigner:false, isWritable:false},
-    //             {pubkey:stake_acc.publicKey, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
-    //             {pubkey:vote_acc, isSigner:false, isWritable:false},
-    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
-    //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
-    //             {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
-    //             {pubkey:STAKE_CONFIG_ID, isSigner:false, isWritable:false},
-    //         ],
-    //         data:Buffer.concat([
-    //             Buffer.from([2]),
-    //             Buffer.from([manager_bump])
-    //         ])
-    //     });
-    //     let tx=new Transaction().add(ix);
-    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-    //     tx.sign(user10);
-    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
-    //     await connection.confirmTransaction(txStatus); 
-    //     console.log("delegate stake tx : ",txStatus);
-    // }),
+    it("delegate stake to validator test", async()=>{
+        const STAKE_CONFIG_ID = new PublicKey("StakeConfig11111111111111111111111111111111");
+        let ix=new TransactionInstruction({
+            programId:stake_manager_prog,
+            keys:[
+                {pubkey:user.publicKey, isSigner:true, isWritable:false},
+                {pubkey:manager_pda, isSigner:false, isWritable:false},
+                // {pubkey:stake_acc11.publicKey, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+                {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+                {pubkey:vote_acc2, isSigner:false, isWritable:false},
+                {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+                {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+                {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
+                {pubkey:STAKE_CONFIG_ID, isSigner:false, isWritable:false},
+            ],
+            data:Buffer.concat([
+                Buffer.from([2]),
+                Buffer.from([manager_bump])
+            ])
+        });
+        let tx=new Transaction().add(ix);
+        tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+        tx.sign(user);
+        let txStatus=await connection.sendRawTransaction(tx.serialize());
+        await connection.confirmTransaction(txStatus); 
+        console.log("delegate stake tx : ",txStatus);
+    })
 
 
     // it("deactivate stake test", async()=>{
     //     let ix=new TransactionInstruction({
     //         programId:stake_manager_prog,
     //         keys:[
-    //             {pubkey:user.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:user6.publicKey, isSigner:true, isWritable:false},
     //             {pubkey:manager_pda, isSigner:false, isWritable:false},
-    //             {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+    //             {pubkey:stake_acc6, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
     //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
     //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
     //         ],
@@ -306,7 +322,7 @@ describe("stake manager tests",()=>{
     //     });
     //     let tx=new Transaction().add(ix);
     //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-    //     tx.sign(user);
+    //     tx.sign(user6);
         
     //     let txStatus=await connection.sendRawTransaction(tx.serialize());
     //     await connection.confirmTransaction(txStatus); 
@@ -317,16 +333,17 @@ describe("stake manager tests",()=>{
         
     //     let user_position_pda_data=await connection.getAccountInfo(user_position_pda);
     //     console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
-    // }),
+    // })
+
 
     // it("withdraw stake test", async()=>{
     //     let ix=new TransactionInstruction({
     //         programId:stake_manager_prog,
     //         keys:[
-    //             {pubkey:user.publicKey, isSigner:true, isWritable:false},
+    //             {pubkey:user6.publicKey, isSigner:true, isWritable:false},
     //             {pubkey:manager_pda, isSigner:false, isWritable:false},
     //             {pubkey:user_position_pda, isSigner:false, isWritable:false},
-    //             {pubkey:stake_acc1, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
+    //             {pubkey:stake_acc6, isSigner:false, isWritable:true}, //needs to be signer and maybe writable also
     //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
     //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
     //             {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
@@ -339,7 +356,7 @@ describe("stake manager tests",()=>{
     //     });
     //     let tx=new Transaction().add(ix);
     //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-    //     tx.sign(user);
+    //     tx.sign(user6);
         
     //     let txStatus=await connection.sendRawTransaction(tx.serialize());
     //     await connection.confirmTransaction(txStatus); 
@@ -350,7 +367,7 @@ describe("stake manager tests",()=>{
         
     //     let user_position_pda_data=await connection.getAccountInfo(user_position_pda);
     //     console.log(" user_position_pda_data : ", borsh.deserialize(userPositionPdaSchema, user_position_pda_data?.data));
-    // }),
+    // })
 
 
     // it("split stake account test",async()=>{
@@ -362,7 +379,7 @@ describe("stake manager tests",()=>{
     //     let ix=new TransactionInstruction({
     //         programId:stake_manager_prog,
     //         keys:[
-    //             {pubkey:user10.publicKey, isSigner:true, isWritable:true},
+    //             {pubkey:user11.publicKey, isSigner:true, isWritable:true},
     //             {pubkey:manager_pda, isSigner:false, isWritable:false},
     //             // {pubkey:stake_acc.publicKey, isSigner:false, isWritable:false},
     //             {pubkey:stake_acc10, isSigner:false, isWritable:true},
@@ -378,37 +395,37 @@ describe("stake manager tests",()=>{
     //     });
     //     let tx=new Transaction().add(ix);
     //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-    //     tx.sign(user10, new_split_stake_acc);
+    //     tx.sign(user11, new_split_stake_acc);
     //     let txStatus=await connection.sendRawTransaction(tx.serialize());
     //     await connection.confirmTransaction(txStatus);
     //     console.log("split stake tx status : ",txStatus);
     // }),
 
 
-    it("merge stake accounts test",async()=>{
-        let src_stake_pubkey=new PublicKey("EiiWuQDa1hud6w2PbrALxdHoEH8vgk2PTgBEXVjXWe2s");
-        console.log("src_stake_acc : ",src_stake_pubkey.toBase58());
-        let ix=new TransactionInstruction({
-            programId:stake_manager_prog,
-            keys:[
-                {pubkey:user10.publicKey, isSigner:true, isWritable:true},
-                {pubkey:manager_pda, isSigner:false, isWritable:true},
-                {pubkey:stake_acc10, isSigner:false, isWritable:true},
-                {pubkey:src_stake_pubkey, isSigner:false, isWritable:true},
-                {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
-                {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
-                {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
-            ],
-            data:Buffer.concat([
-                Buffer.from([5]),
-                Buffer.from([manager_bump])
-            ])
-        });
-        let tx=new Transaction().add(ix);
-        tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
-        tx.sign(user10);
-        let txStatus=await connection.sendRawTransaction(tx.serialize());
-        await connection.confirmTransaction(txStatus);
-        console.log("merge stake tx status : ",txStatus);
-    })
+    // it("merge stake accounts test",async()=>{
+    //     let src_stake_pubkey=new PublicKey("HkwXC1StMp1wN3DPm4W6W5M8PuqWtVwHJJ6LZcLgsBWb");
+    //     console.log("src_stake_acc : ",src_stake_pubkey.toBase58());
+    //     let ix=new TransactionInstruction({
+    //         programId:stake_manager_prog,
+    //         keys:[
+    //             {pubkey:user11.publicKey, isSigner:true, isWritable:true},
+    //             {pubkey:manager_pda, isSigner:false, isWritable:true},
+    //             {pubkey:stake_acc10, isSigner:false, isWritable:true},
+    //             {pubkey:src_stake_pubkey, isSigner:false, isWritable:true},
+    //             {pubkey:StakeProgram.programId, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_CLOCK_PUBKEY, isSigner:false, isWritable:false},
+    //             {pubkey:SYSVAR_STAKE_HISTORY_PUBKEY, isSigner:false, isWritable:false},
+    //         ],
+    //         data:Buffer.concat([
+    //             Buffer.from([5]),
+    //             Buffer.from([manager_bump])
+    //         ])
+    //     });
+    //     let tx=new Transaction().add(ix);
+    //     tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+    //     tx.sign(user11);
+    //     let txStatus=await connection.sendRawTransaction(tx.serialize());
+    //     await connection.confirmTransaction(txStatus);
+    //     console.log("merge stake tx status : ",txStatus);
+    // })
 })
