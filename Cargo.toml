@@ -1,0 +1,6 @@
+[workspace]
+members=[
+    "stake_manager",
+    "lst_manager"
+]
+resolver="2"

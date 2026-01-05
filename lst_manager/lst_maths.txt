@@ -1,3 +1,15 @@
+🔟 Recommended build order (DO NOT SKIP)
+
+1️⃣ Reuse your Stake Manager as-is
+2️⃣ Write LST Manager State
+3️⃣ Implement InitializeLST
+4️⃣ Implement DepositSOL (mint LST)
+5️⃣ Implement RequestWithdraw
+6️⃣ Implement ProcessWithdraw
+7️⃣ Add rebalancing + split/merge
+
+
+
 Sure 🙂 let’s do this purely with numbers, very simple, no jargon.
 
 Step 1: Pool starts empty
