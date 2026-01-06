@@ -172,3 +172,188 @@ Think of LST as shares of a vault:
 Deposit SOL → mint shares
 Rewards → vault grows
 Unstake → burn shares → withdraw vault assets
+
+
+
+
+
+pack, unpack, serialize or deserialize code using arrayref
+
+use {
+    crate::instruction::MAX_SIGNERS,
+    arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs},
+    num_enum::TryFromPrimitive,
+    solana_program_error::ProgramError,
+    solana_program_option::COption,
+    solana_program_pack::{IsInitialized, Pack, Sealed},
+    solana_pubkey::{Pubkey, PUBKEY_BYTES},
+};
+
+/// Mint data.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Mint {
+    /// Optional authority used to mint new tokens. The mint authority may only
+    /// be provided during mint creation. If no mint authority is present
+    /// then the mint has a fixed supply and no further tokens may be
+    /// minted.
+    pub mint_authority: COption<Pubkey>,
+    /// Total supply of tokens.
+    pub supply: u64,
+    /// Number of base 10 digits to the right of the decimal place.
+    pub decimals: u8,
+    /// Is `true` if this structure has been initialized
+    pub is_initialized: bool,
+    /// Optional authority to freeze token accounts.
+    pub freeze_authority: COption<Pubkey>,
+}
+impl Sealed for Mint {}
+impl IsInitialized for Mint {
+    fn is_initialized(&self) -> bool {
+        self.is_initialized
+    }
+}
+impl Pack for Mint {
+    const LEN: usize = 82;
+    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
+        let src = array_ref![src, 0, 82];
+        let (mint_authority, supply, decimals, is_initialized, freeze_authority) =
+            array_refs![src, 36, 8, 1, 1, 36];
+        let mint_authority = unpack_coption_key(mint_authority)?;
+        let supply = u64::from_le_bytes(*supply);
+        let decimals = decimals[0];
+        let is_initialized = match is_initialized {
+            [0] => false,
+            [1] => true,
+            _ => return Err(ProgramError::InvalidAccountData),
+        };
+        let freeze_authority = unpack_coption_key(freeze_authority)?;
+        Ok(Mint {
+            mint_authority,
+            supply,
+            decimals,
+            is_initialized,
+            freeze_authority,
+        })
+    }
+    fn pack_into_slice(&self, dst: &mut [u8]) {
+        let dst = array_mut_ref![dst, 0, 82];
+        let (
+            mint_authority_dst,
+            supply_dst,
+            decimals_dst,
+            is_initialized_dst,
+            freeze_authority_dst,
+        ) = mut_array_refs![dst, 36, 8, 1, 1, 36];
+        let &Mint {
+            ref mint_authority,
+            supply,
+            decimals,
+            is_initialized,
+            ref freeze_authority,
+        } = self;
+        pack_coption_key(mint_authority, mint_authority_dst);
+        *supply_dst = supply.to_le_bytes();
+        decimals_dst[0] = decimals;
+        is_initialized_dst[0] = is_initialized as u8;
+        pack_coption_key(freeze_authority, freeze_authority_dst);
+    }
+}
+
+/// Account data.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Account {
+    /// The mint associated with this account
+    pub mint: Pubkey,
+    /// The owner of this account.
+    pub owner: Pubkey,
+    /// The amount of tokens this account holds.
+    pub amount: u64,
+    /// If `delegate` is `Some` then `delegated_amount` represents
+    /// the amount authorized by the delegate
+    pub delegate: COption<Pubkey>,
+    /// The account's state
+    pub state: AccountState,
+    /// If `is_native.is_some`, this is a native token, and the value logs the
+    /// rent-exempt reserve. An Account is required to be rent-exempt, so
+    /// the value is used by the Processor to ensure that wrapped SOL
+    /// accounts do not drop below this threshold.
+    pub is_native: COption<u64>,
+    /// The amount delegated
+    pub delegated_amount: u64,
+    /// Optional authority to close the account.
+    pub close_authority: COption<Pubkey>,
+}
+impl Account {
+    /// Checks if account is frozen
+    pub fn is_frozen(&self) -> bool {
+        self.state == AccountState::Frozen
+    }
+    /// Checks if account is native
+    pub fn is_native(&self) -> bool {
+        self.is_native.is_some()
+    }
+    /// Checks if a token Account's owner is the `system_program` or the
+    /// incinerator
+    pub fn is_owned_by_system_program_or_incinerator(&self) -> bool {
+        solana_sdk_ids::system_program::check_id(&self.owner)
+            || solana_sdk_ids::incinerator::check_id(&self.owner)
+    }
+}
+impl Sealed for Account {}
+impl IsInitialized for Account {
+    fn is_initialized(&self) -> bool {
+        self.state != AccountState::Uninitialized
+    }
+}
+impl Pack for Account {
+    const LEN: usize = 165;
+    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
+        let src = array_ref![src, 0, 165];
+        let (mint, owner, amount, delegate, state, is_native, delegated_amount, close_authority) =
+            array_refs![src, 32, 32, 8, 36, 1, 12, 8, 36];
+        Ok(Account {
+            mint: Pubkey::new_from_array(*mint),
+            owner: Pubkey::new_from_array(*owner),
+            amount: u64::from_le_bytes(*amount),
+            delegate: unpack_coption_key(delegate)?,
+            state: AccountState::try_from_primitive(state[0])
+                .or(Err(ProgramError::InvalidAccountData))?,
+            is_native: unpack_coption_u64(is_native)?,
+            delegated_amount: u64::from_le_bytes(*delegated_amount),
+            close_authority: unpack_coption_key(close_authority)?,
+        })
+    }
+    fn pack_into_slice(&self, dst: &mut [u8]) {
+        let dst = array_mut_ref![dst, 0, 165];
+        let (
+            mint_dst,
+            owner_dst,
+            amount_dst,
+            delegate_dst,
+            state_dst,
+            is_native_dst,
+            delegated_amount_dst,
+            close_authority_dst,
+        ) = mut_array_refs![dst, 32, 32, 8, 36, 1, 12, 8, 36];
+        let &Account {
+            ref mint,
+            ref owner,
+            amount,
+            ref delegate,
+            state,
+            ref is_native,
+            delegated_amount,
+            ref close_authority,
+        } = self;
+        mint_dst.copy_from_slice(mint.as_ref());
+        owner_dst.copy_from_slice(owner.as_ref());
+        *amount_dst = amount.to_le_bytes();
+        pack_coption_key(delegate, delegate_dst);
+        state_dst[0] = state as u8;
+        pack_coption_u64(is_native, is_native_dst);
+        *delegated_amount_dst = delegated_amount.to_le_bytes();
+        pack_coption_key(close_authority, close_authority_dst);
+    }
+}

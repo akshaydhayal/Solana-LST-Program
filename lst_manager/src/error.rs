@@ -7,6 +7,8 @@ pub enum LSTErrors{
     LSTManagerPdaMismatch,
     #[error("given lst manager vault pda seeds do not match with correct lst manager vault seeds")]
     LSTManagerVaultPdaMismatch,
+    #[error("given lst mint pda seeds do not match with correct lst mint seeds")]
+    LSTMintPdaMismatch,
     #[error("given stake manager pda seeds do not match with correct stake manager seeds")]
     StakeManagerPdaMismatch
 }
