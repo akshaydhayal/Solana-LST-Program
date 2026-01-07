@@ -59,7 +59,7 @@ pub fn create_stake_account(program_id:&Pubkey, accounts:&[AccountInfo], stake_a
         solana_program::stake::state::StakeStateV2::size_of() as u64,
         &solana_program::stake::program::ID
     );
-    invoke(&ix1,
+    invoke(&ix1, 
         &[user.clone(), stake_acc.clone(), system_prog.clone()])?;
     msg!("stake account created");
 

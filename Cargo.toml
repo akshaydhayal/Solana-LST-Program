@@ -1,6 +1,6 @@
 [workspace]
 members=[
-    "stake_manager",
-    "lst_manager"
+    "contract",
+    # "lst_manager"
 ]
 resolver="2"
